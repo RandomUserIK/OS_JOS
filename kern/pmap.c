@@ -377,7 +377,33 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
-	return NULL;
+	size_t dirIndex = PDX(va);
+	size_t tableIndex = PTX(va);
+	
+	pde_t *dirEntry = &pgdir[dirIndex];
+	pte_t *tableEntry = NULL;	
+
+	if(!(*dirEntry & PTE_P))
+	{
+		if(!create)
+		{
+			return NULL;
+		}
+
+		struct PageInfo *pg = page_alloc(ALLOC_ZERO); // for page_alloc, zero the returned physical page
+			
+		if(pg == NULL)
+		{
+			return NULL;
+		}
+			
+		pg->pp_ref++;
+		*dirEntry = page2pa(pg) | PTE_P | PTE_U | PTE_W;		
+	
+	}
+	
+	tableEntry = (pte_t *) KADDR(PTE_ADDR(*dirEntry));
+	return tableEntry + tableIndex;
 }
 
 //
@@ -395,6 +421,22 @@ static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	// Fill this function in
+	pte_t *ptable;
+	size_t i = 0;
+	for(i; i < size / PGSIZE; ++i)
+	{
+		ptable = pgdir_walk(pgdir, (void *) va, 1);
+		
+		if(ptable == NULL)
+		{
+			panic("boot_map_region out of memory!\n");
+		}
+
+		*ptable = pa | perm | PTE_P;
+		
+		va += PGSIZE;
+		pa += PGSIZE;
+	}
 }
 
 //
