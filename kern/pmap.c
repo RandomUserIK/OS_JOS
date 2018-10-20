@@ -185,6 +185,7 @@ mem_init(void)
 	//      (ie. perm = PTE_U | PTE_P)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
+	boot_map_region(kern_pgdir, UPAGES, sizeof(struct PageInfo)*npages, PADDR(pages), PTE_U | PTE_P);
 
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
@@ -197,6 +198,7 @@ mem_init(void)
 	//       overwrite memory.  Known as a "guard page".
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
+	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstack),(PTE_W | PTE_P));
 		
 
 
@@ -206,7 +208,7 @@ mem_init(void)
 	// Ie.  the VA range [KERNBASE, 2^32) should map to
 	//      the PA range [0, 2^32 - KERNBASE)
 	// Your code goes here:
-	//boot_map_region(kern_pgdir, va, size, pa, PTE_W | PTE_P);	
+	boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W);	
 
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
@@ -468,6 +470,25 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
+	pte_t *pte = pgdir_walk(pgdir, va, 1); 
+	physaddr_t pg_phys_addr = page2pa(pp);
+
+	if(!pte) return NULL;
+	
+	if(*pte & PTE_P)
+	{
+		if(pg_phys_addr == PTE_ADDR(*pte))
+		{
+			*pte = pg_phys_addr | perm | PTE_P;
+			return 0;
+		}
+
+		tlb_invalidate(pgdir, va);
+		page_remove(pgdir, va);
+	}
+
+	pp->pp_ref++;
+	*pte = pg_phys_addr | perm | PTE_P;
 	return 0;
 }
 
@@ -486,7 +507,20 @@ struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
-	return NULL;
+	pte_t *pte = pgdir_walk(pgdir, va, 0); // only lookup
+	
+	if(pte == NULL)
+	{
+		return NULL;
+	}
+	
+	if(pte_store != NULL)
+	{
+		*pte_store = pte;
+	}
+	
+	return (struct PageInfo*) pa2page(PTE_ADDR(*pte));
+
 }
 
 //
@@ -508,6 +542,20 @@ void
 page_remove(pde_t *pgdir, void *va)
 {
 	// Fill this function in
+	pte_t *pte;
+	struct PageInfo *pg = page_lookup(pgdir, va, &pte);
+	
+	if((pg == NULL) || !(*pte & PTE_P))
+	{
+		return;
+	}
+
+	page_decref(pg);
+	
+	*pte = 0;
+	
+	tlb_invalidate(pgdir, va);
+
 }
 
 //
