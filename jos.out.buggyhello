@@ -26,4 +26,4 @@ DR0=00000000 DR1=00000000 DR2=00000000 DR3=00000000
 DR6=ffff0ff0 DR7=00000400
 EFER=0000000000000000
 Triple fault.  Halting for inspection via QEMU monitor.
-qemu: terminating on signal 15 from pid 7838
+qemu: terminating on signal 15 from pid 7632
