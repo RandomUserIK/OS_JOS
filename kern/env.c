@@ -121,8 +121,7 @@ env_init(void)
 	{
 		envs[i].env_id = 0;
 		envs[i].env_link = env_free_list;
-		env_free_list = &envs[i];
-		envs[i].env_status = ENV_FREE;	
+		env_free_list = &envs[i];	
 	}
 
 	// Per-CPU part of the initialization
@@ -523,7 +522,7 @@ env_run(struct Env *e)
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
-	if((curenv != NULL) && (curenv->env_status == ENV_RUNNING))
+	if(curenv && (curenv->env_status == ENV_RUNNING))
 	{
 		curenv->env_status = ENV_RUNNABLE;
 	}

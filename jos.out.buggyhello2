@@ -8,22 +8,13 @@ check_page() succeeded!
 check_kern_pgdir() succeeded!
 check_page_free_list() succeeded!
 [00000000] new env 00001000
-EAX=00000000 EBX=00000000 ECX=00000000 EDX=00000000
-ESI=00000000 EDI=00000000 EBP=00000000 ESP=eebfe000
-EIP=00000000 EFL=00000002 [-------] CPL=3 II=0 A20=1 SMM=0 HLT=0
-ES =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-CS =001b 00000000 ffffffff 00cffa00 DPL=3 CS32 [-R-]
-SS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-DS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-FS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-GS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-LDT=0000 00000000 00000000 00008200 DPL=0 LDT
-TR =0028 f01707c0 00000067 00408900 DPL=0 TSS32-avl
-GDT=     f011a320 0000002f
-IDT=     f016ffa0 000007ff
-CR0=80050033 CR2=00000000 CR3=003ba000 CR4=00000000
-DR0=00000000 DR1=00000000 DR2=00000000 DR3=00000000 
-DR6=ffff0ff0 DR7=00000400
-EFER=0000000000000000
-Triple fault.  Halting for inspection via QEMU monitor.
-qemu: terminating on signal 15 from pid 7735
+Incoming TRAP frame at 0xefffffbc
+Incoming TRAP frame at 0xefffffbc
+hello, world
+Incoming TRAP frame at 0xefffffbc
+[00001000] exiting gracefully
+[00001000] free env 00001000
+Destroyed the only environment - nothing more to do!
+Welcome to the JOS kernel monitor!
+Type 'help' for a list of commands.
+qemu: terminating on signal 15 from pid 30361
