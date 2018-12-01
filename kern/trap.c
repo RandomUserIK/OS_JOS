@@ -124,7 +124,7 @@ trap_init_percpu(void)
 	// wrong, you may not get a fault until you try to return from
 	// user space on that CPU.
 	//
-	// LAB 4: Your code here:
+	// LAB 4: Your code here:	
 
 	// Setup a TSS so that -we get the right stack
 	// when we trap to the kernel.
@@ -344,7 +344,32 @@ page_fault_handler(struct Trapframe *tf)
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
 	// LAB 4: Your code here.
+	if(curenv->env_pgfault_upcall)
+	{
+		size_t size = sizeof(struct UTrapframe);
+		struct UTrapframe  *userTF = (struct UTrapframe*) (UXSTACKTOP - size);
+		
+		if(tf->tf_esp > USTACKTOP)
+		{
+			size += 4;
+			userTF = (struct UTrapframe*) (tf->tf_esp - size);
+		}
 
+		user_mem_assert(curenv, (void *) userTF, size, (PTE_U | PTE_W));
+
+		userTF->utf_fault_va = fault_va;
+		userTF->utf_err = tf->tf_err; 
+		userTF->utf_regs = tf->tf_regs;
+		userTF->utf_eip = tf->tf_eip; 
+		userTF->utf_eflags = tf->tf_eflags; 
+		userTF->utf_esp = tf->tf_esp;
+
+		tf->tf_esp = (uint32_t) userTF;
+		tf->tf_eip = (uint32_t) curenv->env_pgfault_upcall;
+
+		env_run(curenv);		
+	}
+	
 	// Destroy the environment that caused the fault.
 	cprintf("[%08x] user fault va %08x ip %08x\n",
 		curenv->env_id, fault_va, tf->tf_eip);
