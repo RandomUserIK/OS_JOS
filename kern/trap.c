@@ -91,7 +91,24 @@ trap_init(void)
 	extern void TH_ALIGN(); 	SETGATE(idt[T_ALIGN], 0, GD_KT, TH_ALIGN, 0); 
 	extern void TH_MCHK(); 		SETGATE(idt[T_MCHK], 0, GD_KT, TH_MCHK, 0); 
 	extern void TH_SIMDERR(); 	SETGATE(idt[T_SIMDERR], 0, GD_KT, TH_SIMDERR, 0); 
-	extern void TH_SYSCALL(); 	SETGATE(idt[T_SYSCALL], 1, GD_KT, TH_SYSCALL, 3); 
+	extern void TH_SYSCALL(); 	SETGATE(idt[T_SYSCALL], 0, GD_KT, TH_SYSCALL, 3); 
+	
+	extern void TH_IRQ_TIMER(); 	SETGATE(idt[IRQ_OFFSET + IRQ_TIMER], 0, GD_KT, TH_IRQ_TIMER, 0);
+	extern void TH_IRQ_KBD();
+	extern void TH_IRQ_2();
+	extern void TH_IRQ_3();
+	extern void TH_IRQ_SERIAL();
+	extern void TH_IRQ_5();
+	extern void TH_IRQ_6();
+	extern void TH_IRQ_SPURIOUS();
+	extern void TH_IRQ_8();
+	extern void TH_IRQ_9();
+	extern void TH_IRQ_10();
+	extern void TH_IRQ_11();
+	extern void TH_IRQ_12();
+	extern void TH_IRQ_13();
+	extern void TH_IRQ_IDE();
+	extern void TH_IRQ_15();
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -225,6 +242,13 @@ trap_dispatch(struct Trapframe *tf)
 	// Handle clock interrupts. Don't forget to acknowledge the
 	// interrupt using lapic_eoi() before calling the scheduler!
 	// LAB 4: Your code here.
+	if(tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER)
+	{
+		lapic_eoi();
+		sched_yield();
+		return;
+	}
+
 
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);

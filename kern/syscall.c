@@ -371,7 +371,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 
 		case SYS_getenvid:		 return sys_getenvid();
 
-		case SYS_env_destroy:		 sys_env_destroy((envid_t) a1);
+		case SYS_env_destroy:		 return sys_env_destroy((envid_t) a1);
 		
 		case SYS_yield:			 sys_yield();			return 0;
 	
