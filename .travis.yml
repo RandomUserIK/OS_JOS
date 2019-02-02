@@ -1,5 +1,7 @@
+matrix:
+
 language: c
 
-compiler: gcc
+language: python
 
 
